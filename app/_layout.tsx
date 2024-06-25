@@ -1,59 +1,81 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { Link, Stack } from 'expo-router';
+import {ConvexProvider, ConvexReactClient} from 'convex/react'
+import { StatusBar, TouchableOpacity } from 'react-native';
+import {Ionicons} from '@expo/vector-icons'
 import { useEffect } from 'react';
-import 'react-native-reanimated';
+const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
+  unsavedChangesWarning: false
+});
 
-import { useColorScheme } from '@/components/useColorScheme';
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
-
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+export default function RootLayoutNav() {
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+    // Configuration du StatusBar
+    StatusBar.setBarStyle('light-content');
+    StatusBar.setBackgroundColor('#1a1a1a');
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+    <ConvexProvider client={convex}>
+      
+       <Stack
+       screenOptions={{
+        headerStyle: {
+          backgroundColor: '#1a1a1a',
+        },
+        headerTintColor: '#fff',
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 20,
+          color: '#fff'
+        }
+      }}>
+        <Stack.Screen
+        name='index'
+        options={{
+          headerTitle: 'HAFATRA',
+          headerRight: () => (
+            <Link href={'/(modal)/create'} asChild>
+              <TouchableOpacity
+              style={{
+                backgroundColor: '#EEA217',
+                borderColor : "#2b2a2a",
+                padding: 1,
+                borderRadius: 30,
+                borderWidth: 3, 
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#fff', 
+                shadowOffset: { width: -10, height: 10 }, 
+                shadowOpacity: 0.8, 
+                shadowRadius: 2, 
+                elevation: 5, 
+              }}>
+                <Ionicons name="add" size={32} color="white" />
+              </TouchableOpacity>
+            </Link>
+          )
+        }}
+        />
+        <Stack.Screen
+        name='(modal)/create'
+        options={{
+          headerTitle: 'Start a chat',
+          presentation: 'modal',
+          headerRight: () => (
+            <Link href={'/'} asChild>
+              <TouchableOpacity>
+              </TouchableOpacity>
+            </Link>
+          )
+        }}
+        />
+        <Stack.Screen name="(chat)/[chatid]" options={{
+          headerTitle: '',
+        }}/>
       </Stack>
-    </ThemeProvider>
+    </ConvexProvider>
+     
   );
 }
